@@ -1,29 +1,33 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
-import { FireOutlined, FireFilled } from "@ant-design/icons";
 import { connect } from "react-redux";
 import { Table } from "antd";
-import { addFavorite, initApp } from "./redux/currency-reducer";
+import { FireOutlined, FireFilled } from "@ant-design/icons";
+import { FallOutlined, RiseOutlined } from "@ant-design/icons/lib";
+import {
+  updateLocalFavorite,
+  toggleFavorite,
+  initApp,
+} from "./redux/currency-reducer";
 import { RootState } from "./redux/redux-store";
 import "antd/dist/antd.css";
 import { Currency } from "./redux/currency-reducer.types";
-import { FallOutlined, RiseOutlined } from "@ant-design/icons/lib";
 
 interface CurrencyTableProps {
   currency: any;
   favoriteCurrency: Array<string>;
-  addFavorite: typeof addFavorite;
+  toggleFavorite: typeof toggleFavorite;
 }
 
 interface FavoriteIconProps {
   id: string;
-  addFavorite: typeof addFavorite;
+  toggleFavorite: typeof toggleFavorite;
   filled: boolean;
 }
 
 const FavoriteIcon = (props: FavoriteIconProps) => {
   const handleFavoriteIconClick = () => {
-    if (!props.filled) props.addFavorite(props.id);
+    props.toggleFavorite(props.id);
   };
 
   return (
@@ -70,7 +74,7 @@ const CurrencyTable = (props: CurrencyTableProps) => {
         <div>
           <FavoriteIcon
             id={data.id}
-            addFavorite={props.addFavorite}
+            toggleFavorite={props.toggleFavorite}
             filled={props.favoriteCurrency.some(
               (element) => element === data.id
             )}
@@ -90,6 +94,17 @@ const CurrencyTable = (props: CurrencyTableProps) => {
 function App(props: any) {
   const [isInit, doInitApp] = useState(false);
 
+  useEffect(() => {
+    const onbeforeunloadFn = () => {
+      props.updateLocalFavorite();
+    };
+
+    window.addEventListener("beforeunload", onbeforeunloadFn);
+    return () => {
+      window.removeEventListener("beforeunload", onbeforeunloadFn);
+    };
+  });
+
   if (!isInit) {
     props.initApp();
     doInitApp(true);
@@ -99,7 +114,7 @@ function App(props: any) {
     <div className="App">
       <CurrencyTable
         currency={props.currency}
-        addFavorite={props.addFavorite}
+        toggleFavorite={props.toggleFavorite}
         favoriteCurrency={props.favoriteCurrency}
       />
     </div>
@@ -115,5 +130,6 @@ const mapStateToProps = (state: RootState) => {
 
 export default connect(mapStateToProps, {
   initApp,
-  addFavorite,
+  toggleFavorite,
+  updateLocalFavorite,
 })(App);

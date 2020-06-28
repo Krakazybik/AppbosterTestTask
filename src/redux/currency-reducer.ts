@@ -4,10 +4,13 @@ import {
   CurrencyActionType,
   CurrencyState,
   ToggleFavoriteAction,
+  UpdateLocalFavoriteAction,
+  GetLocalFavoriteAction,
   GET_LOCAL_FAVORITE_CURRENCY,
   ADD_FAVORITE,
   UPDATE_CURRENCY,
   TOGGLE_FAVORITE,
+  UPDATE_LOCAL_FAVORITE_CURRENCY,
 } from "./currency-reducer.types";
 import { getCurrencyDaily } from "../API/currency";
 
@@ -35,13 +38,18 @@ const currencyReducer = (
         return {
           ...state,
           currency: state.currency?.map((el) => {
-            if (favoriteCurrency.some((element: string) => element === el.id))
-              el.isFavorite = true;
+            if (favoriteCurrency.some((element: string) => element === el.id)) {
+              return { ...el, isFavorite: true };
+            }
             return el;
           }),
           favoriteCurrency: [...favoriteCurrency],
         };
       }
+      return state;
+    }
+    case UPDATE_LOCAL_FAVORITE_CURRENCY: {
+      updateFavoriteCurrencyLocalStorage(state.favoriteCurrency);
       return state;
     }
     case UPDATE_CURRENCY: {
@@ -56,28 +64,38 @@ const currencyReducer = (
         action.favoriteCurrency,
       ];
 
-      updateFavoriteCurrencyLocalStorage(newFavoriteCurrency);
-
       return {
         ...state,
-        currency: state.currency?.map((cur) => {
-          if (cur.id === action.favoriteCurrency) cur.isFavorite = true;
-          return cur;
+        currency: state.currency?.map((el) => {
+          if (el.id === action.favoriteCurrency) {
+            return { ...el, isFavorite: true };
+          }
+          return el;
         }),
         favoriteCurrency: newFavoriteCurrency,
       };
     }
-    case TOGGLE_FAVORITE:
+    case TOGGLE_FAVORITE: {
+      let tempFavoriteCurrency = [...state.favoriteCurrency];
+
       return {
         ...state,
         currency: state.currency?.map((el) => {
-          if (el.id === action.favoriteId) el.isFavorite = !el.isFavorite;
+          if (el.id === action.favoriteId) {
+            if (el.isFavorite) {
+              tempFavoriteCurrency = state.favoriteCurrency.filter(
+                (tempCurrency) => tempCurrency !== action.favoriteId
+              );
+            } else {
+              tempFavoriteCurrency.push(action.favoriteId);
+            }
+            return { ...el, isFavorite: !el.isFavorite };
+          }
           return el;
         }),
-        favoriteCurrency: state.favoriteCurrency.filter(
-          (el) => el !== action.favoriteId
-        ),
+        favoriteCurrency: tempFavoriteCurrency,
       };
+    }
     default:
       return state;
   }
@@ -92,7 +110,7 @@ const updateCurrencyActionCreator = (
   };
 };
 
-export const getLocalFavorite = () => {
+export const getLocalFavorite = (): GetLocalFavoriteAction => {
   return {
     type: GET_LOCAL_FAVORITE_CURRENCY,
   };
@@ -120,9 +138,15 @@ export const updateCurrency = () => (
   });
 };
 
+export const updateLocalFavorite = (): UpdateLocalFavoriteAction => {
+  return {
+    type: UPDATE_LOCAL_FAVORITE_CURRENCY,
+  };
+};
+
 export const initApp = () => async (dispatch: any) => {
-  const promiseUpdateCurrency = await dispatch(updateCurrency());
-  const promiseGetFavorite = await dispatch(getLocalFavorite());
+  await dispatch(updateCurrency());
+  await dispatch(getLocalFavorite());
 };
 
 export default currencyReducer;

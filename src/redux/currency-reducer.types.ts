@@ -1,6 +1,8 @@
 export const UPDATE_CURRENCY = "currency-reducer/UPDATE-CURRENCY";
 export const ADD_FAVORITE = "currency-reducer/ADD-FAVORITE";
 export const TOGGLE_FAVORITE = "currency-reducer/TOGGLE_FAVORITE";
+export const UPDATE_LOCAL_FAVORITE_CURRENCY =
+  "currency-reducer/UPDATE-LOCAL-FAVORITE-CURRENCY";
 export const GET_LOCAL_FAVORITE_CURRENCY =
   "currency-reducer/GET-LOCAL-FAVORITE-CURRENCY";
 
@@ -37,8 +39,13 @@ export interface GetLocalFavoriteAction {
   type: typeof GET_LOCAL_FAVORITE_CURRENCY;
 }
 
+export interface UpdateLocalFavoriteAction {
+  type: typeof UPDATE_LOCAL_FAVORITE_CURRENCY;
+}
+
 export type CurrencyActionType =
   | GetCurrencyAction
   | AddFavoriteAction
   | GetLocalFavoriteAction
-  | ToggleFavoriteAction;
+  | ToggleFavoriteAction
+  | UpdateLocalFavoriteAction;

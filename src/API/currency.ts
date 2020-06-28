@@ -27,6 +27,12 @@ export const getCurrencyDaily = async () => {
         prevValue: value[1].Previous,
         isFavorite: false,
       });
+      return null;
+    });
+    currency.sort((a: Currency, b: Currency) => {
+      if (a.name > b.name) return 1;
+      if (a.name < b.name) return -1;
+      return 0;
     });
   }
 
